@@ -191,13 +191,13 @@ const ManageFeedback: React.FC<{ teacherId: string }> = ({ teacherId }) => {
         if (currentFeedback) { // Update existing feedback
             await API.updateFeedback(currentFeedback.id, { comment, grade });
         } else { // Add new feedback
-            await API.addFeedback({
-                studentId: currentStudent.id,
-                courseId: currentCourse.id,
-                teacherId: teacherId,
-                comment,
-                grade
-            });
+            await API.createFeedback(
+                currentStudent.id,
+                currentCourse.id,
+                teacherId,
+                grade,
+                comment
+            );
         }
         setIsModalOpen(false);
         fetchData(); // Refresh data

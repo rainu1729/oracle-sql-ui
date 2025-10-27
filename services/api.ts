@@ -52,7 +52,7 @@ export const login = async (
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
-                username: email,  // Using email as username for the API
+                email: email,
                 password: password 
             }),
         });
@@ -96,6 +96,10 @@ export const getCoursesForTeacher = async (teacherId: string): Promise<Course[]>
 export const getEnrollmentsForTeacher = async (teacherId: string): Promise<EnrollmentWithDetails[]> => {
     return apiCall<EnrollmentWithDetails[]>(`/api/teachers/${teacherId}/enrollments`);
 };
+
+export const getEnrolledStudentsForCourse = async (courseId:string) : Promise<Student[]> => {
+    return apiCall<Student[]>(`/api/courses/${courseId}/students`)
+}
 
 export const updateEnrollmentStatus = async (
     enrollmentId: string, 
@@ -148,8 +152,11 @@ export const updateFeedback = async (
     feedbackId: string, 
     data: { comment: string; grade: 'A' | 'B' | 'C' | 'D' | 'F' }
 ): Promise<Feedback | null> => {
-    return apiCall<Feedback>(`/api/feedback/${feedbackId}`, {
-        method: 'PATCH',
+    return apiCall<Feedback>(`/api/feedback/${feedbackId}/update`, {
+        method: 'POST',
+        headers: {
+                'Content-Type': 'application/json',
+            },
         body: JSON.stringify(data)
     });
 };
