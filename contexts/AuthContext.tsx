@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
             const loggedInUser = await API.login(email, password);
             if (loggedInUser) {
                 setUser(loggedInUser);
+                // The token is already stored in sessionStorage by the API call
                 sessionStorage.setItem('authUser', JSON.stringify(loggedInUser));
                 return true;
             }

@@ -2,23 +2,47 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button, Card, Input } from './UI';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useAuth();
+    const { login, user } = useAuth();
+    const navigate = useNavigate();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoggingIn(true);
-        const success = await login(email, password);
-        if (!success) {
-            setError('Invalid email or password. (Hint: use password "password")');
+        try {
+            const success = await login(email, password);
+            if (success) {
+                // Navigate based on user role
+                const userRole = JSON.parse(sessionStorage.getItem('authUser') || '{}').role;
+                switch (userRole?.toLowerCase()) {
+                    case 'admin':
+                        navigate('/admin');
+                        break;
+                    case 'teacher':
+                        navigate('/teacher');
+                        break;
+                    case 'student':
+                        navigate('/student');
+                        break;
+                    default:
+                        setError('Invalid user role');
+                }
+            } else {
+                setError('Invalid email or password');
+            }
+        } catch (err) {
+            setError('Login failed. Please try again.');
+            console.error('Login error:', err);
+        } finally {
+            setIsLoggingIn(false);
         }
-        setIsLoggingIn(false);
     };
 
     return (

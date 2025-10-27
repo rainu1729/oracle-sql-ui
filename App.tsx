@@ -1,6 +1,6 @@
 
 import React from 'react';
-// FIX: Corrected import paths to be relative.
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UserRole } from './types';
 
@@ -9,31 +9,46 @@ import AdminDashboard from './components/AdminDashboard';
 import TeacherDashboard from './components/TeacherDashboard';
 import StudentDashboard from './components/StudentDashboard';
 
-const AppContent: React.FC = () => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
-
+    
     if (!user) {
-        return <LoginPage />;
+        return <Navigate to="/login" replace />;
     }
 
-    switch (user.role) {
-        case UserRole.ADMIN:
-            return <AdminDashboard />;
-        case UserRole.TEACHER:
-            return <TeacherDashboard />;
-        case UserRole.STUDENT:
-            return <StudentDashboard />;
-        default:
-            // This case handles potential unknown roles and defaults to logging out.
-            return <LoginPage />;
-    }
+    return <>{children}</>;
 };
 
 const App: React.FC = () => {
     return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
+        <BrowserRouter>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    
+                    <Route path="/admin" element={
+                        <ProtectedRoute>
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/teacher" element={
+                        <ProtectedRoute>
+                            <TeacherDashboard />
+                        </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/student" element={
+                        <ProtectedRoute>
+                            <StudentDashboard />
+                        </ProtectedRoute>
+                    } />
+                    
+                    {/* Redirect root path to login if not authenticated */}
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+                </Routes>
+            </AuthProvider>
+        </BrowserRouter>
     );
 };
 
