@@ -1,0 +1,5 @@
+{
+  "name": "Oracle SQL Academy Portal",
+  "description": "A web portal for students to learn Oracle SQL and PL/SQL through a hands-on school management system project. It includes separate dashboards and features for Admins, Teachers, and Students.",
+  "requestFramePermissions": []
+}
