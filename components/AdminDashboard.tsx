@@ -4,7 +4,52 @@ import * as API from '../services/api';
 import { User, UserRole, Admin, Teacher, Student, Course } from '../types';
 import { Header, Sidebar } from './Layout';
 import { Card } from './UI';
-import { PencilIcon, TrashIcon } from './Icons';
+import { PencilIcon, TrashIcon, UsersIcon, BookOpenIcon } from './Icons';
+
+// Admin Overview Component
+const AdminOverview: React.FC = () => {
+    const [stats, setStats] = useState([
+        { label: "Total Students", value: 0, icon: UsersIcon },
+        { label: "Total Teachers", value: 0, icon: UsersIcon },
+        { label: "Total Courses", value: 0, icon: BookOpenIcon },
+    ]);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            const [students, teachers, courses] = await Promise.all([
+                API.getStudents(),
+                API.getTeachers(),
+                API.getCourses()
+            ]);
+            
+            setStats([
+                { label: "Total Students", value: students.length, icon: UsersIcon },
+                { label: "Total Teachers", value: teachers.length, icon: UsersIcon },
+                { label: "Total Courses", value: courses.length, icon: BookOpenIcon },
+            ]);
+        };
+        fetchStats();
+    }, []);
+
+    return (
+        <div>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Admin Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {stats.map(stat => (
+                    <Card key={stat.label} className="flex items-center gap-4">
+                        <div className="bg-blue-100 text-blue-600 p-3 rounded-full">
+                            <stat.icon className="w-8 h-8" />
+                        </div>
+                        <div>
+                            <p className="text-gray-500">{stat.label}</p>
+                            <p className="text-3xl font-bold text-gray-800">{stat.value}</p>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 // A component to manage Teachers
 const ManageTeachers: React.FC = () => {
@@ -173,7 +218,7 @@ const AdminDashboard: React.FC = () => {
                  return <ManageClasses />;
             case 'dashboard':
             default:
-                return (<div><h2 className="text-2xl font-bold mb-6 text-gray-800">Admin Overview</h2><p>Welcome to the admin dashboard. Select an option from the sidebar to manage the academy.</p></div>)
+                return <AdminOverview />
         }
     };
 
