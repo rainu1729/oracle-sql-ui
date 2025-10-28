@@ -147,6 +147,18 @@ export const getFeedbackForStudent = async (studentId: string): Promise<Feedback
     return apiCall<Feedback[]>(`/api/students/${studentId}/feedback`);
 };
 
+// Enrollment Management
+export const enrollInCourse = async (studentId: string, courseId: string): Promise<Enrollment> => {
+    return apiCall<Enrollment>('/api/enrollments', {
+        method: 'POST',
+        body: JSON.stringify({
+            studentId,
+            courseId,
+            status: 'pending'
+        })
+    });
+};
+
 // Additional Feedback Management
 export const updateFeedback = async (
     feedbackId: string, 
