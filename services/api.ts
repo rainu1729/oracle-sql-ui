@@ -34,7 +34,14 @@ const apiCall = async <T>(endpoint: string, options: RequestInit = {}): Promise<
     });
 
     if (!response.ok) {
-        throw new Error(`API call failed: ${response.statusText}`);
+        // Try to include response body for better error diagnostics (e.g., validation errors)
+        let bodyText = '';
+        try {
+            bodyText = await response.text();
+        } catch (e) {
+            // ignore
+        }
+        throw new Error(`API call failed: ${response.status} ${response.statusText}${bodyText ? ' - ' + bodyText : ''}`);
     }
 
     return response.json();
@@ -76,16 +83,24 @@ export const login = async (
 
 // User Management
 export const getTeachers = async (): Promise<Teacher[]> => {
-    return apiCall<Teacher[]>('/api/teachers');
+    return apiCall<Teacher[]>('/api/admin/teachers');
+};
+
+export const addTeacher = async (teacherData: Teacher):
+ Promise<Teacher> => {
+    return apiCall<Teacher>('/api/teachers', {
+        method: 'POST',
+        body: JSON.stringify(teacherData)
+    });
 };
 
 export const getStudents = async (): Promise<Student[]> => {
-    return apiCall<Student[]>('/api/students');
+    return apiCall<Student[]>('/api/admin/students');
 };
 
 // Course Management
 export const getCourses = async (): Promise<Course[]> => {
-    return apiCall<Course[]>('/api/courses');
+    return apiCall<Course[]>('/api/admin/courses');
 };
 
 export const getCoursesForTeacher = async (teacherId: string): Promise<Course[]> => {

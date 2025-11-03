@@ -55,6 +55,12 @@ const AdminOverview: React.FC = () => {
 const ManageTeachers: React.FC = () => {
     const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newTeacher, setNewTeacher] = useState({
+        name: '',
+        email: '',
+        specialization: ''
+    });
     
     useEffect(() => {
         const fetchTeachers = async () => {
@@ -66,9 +72,51 @@ const ManageTeachers: React.FC = () => {
         fetchTeachers();
     }, []);
 
+    const handleAddTeacher = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            // Ensure payload includes required fields from the Teacher type
+            const payload = {
+                name: newTeacher.name,
+                email: newTeacher.email,
+                specialization: newTeacher.specialization,
+                role: UserRole.TEACHER,
+                courseIds: [] as string[],
+            };
+
+            const addedTeacher = await API.addTeacher(payload as any);
+            setTeachers([...teachers, addedTeacher]);
+            setShowAddModal(false);
+            setNewTeacher({ name: '', email: '', specialization: '' });
+        } catch (error) {
+            // Log more details when available
+            console.error('Failed to add teacher:', error);
+            // If the error contains a response body, attempt to read it (helps debugging 422 payload issues)
+            try {
+                // @ts-ignore - some errors may carry a `response` with `json()`
+                const resp = error?.response;
+                if (resp && typeof resp.json === 'function') {
+                    const body = await resp.json();
+                    console.error('Server response body:', body);
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+    };
+
     return (
         <Card>
-            <h3 className="text-lg font-semibold mb-4">Manage Teachers</h3>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Manage Teachers</h3>
+                <button 
+                    onClick={() => setShowAddModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                    Add Teacher
+                </button>
+            </div>
+            
             {isLoading ? <p>Loading...</p> : (
                  <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -94,6 +142,63 @@ const ManageTeachers: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {showAddModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                        <h4 className="text-lg font-semibold mb-4">Add New Teacher</h4>
+                        <form onSubmit={handleAddTeacher}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                                    <input
+                                        type="text"
+                                        value={newTeacher.name}
+                                        onChange={e => setNewTeacher({...newTeacher, name: e.target.value})}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                                    <input
+                                        type="email"
+                                        value={newTeacher.email}
+                                        onChange={e => setNewTeacher({...newTeacher, email: e.target.value})}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Specialization</label>
+                                    <input
+                                        type="text"
+                                        value={newTeacher.specialization}
+                                        onChange={e => setNewTeacher({...newTeacher, specialization: e.target.value})}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddModal(false)}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                                    >
+                                        Add Teacher
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </Card>
